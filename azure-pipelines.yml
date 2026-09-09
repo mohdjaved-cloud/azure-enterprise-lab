@@ -32,3 +32,11 @@ steps:
 
   - bash: terraform validate -no-color
     displayName: Validate Terraform configuration
+      - task: AzureCLI@2
+    displayName: Verify Azure service connection
+    inputs:
+      azureSubscription: 'sc-azure-terraform-lab-wif'
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az account show --query "{Subscription:name, Tenant:tenantId}" --output table
