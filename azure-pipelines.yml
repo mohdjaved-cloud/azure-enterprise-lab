@@ -15,12 +15,11 @@ steps:
   - checkout: self
 
   - bash: |
-      wget -O - https://apt.releases.hashicorp.com/gpg \
-        | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" \
-        | sudo tee /etc/apt/sources.list.d/hashicorp.list
-      sudo apt-get update
-      sudo apt-get install -y terraform
+      TF_VERSION="1.16.1"
+      cd "$(Agent.TempDirectory)"
+      curl -fsSLo terraform.zip "https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip"
+      unzip -q terraform.zip
+      sudo install -m 0755 terraform /usr/local/bin/terraform
       terraform version
     displayName: Install Terraform
 
@@ -32,7 +31,8 @@ steps:
 
   - bash: terraform validate -no-color
     displayName: Validate Terraform configuration
-      - task: AzureCLI@2
+
+  - task: AzureCLI@2
     displayName: Verify Azure service connection
     inputs:
       azureSubscription: 'sc-azure-terraform-lab-wif'
